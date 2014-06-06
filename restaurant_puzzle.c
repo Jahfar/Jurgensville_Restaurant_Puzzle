@@ -5,7 +5,7 @@
 /* structures  */
 
 //structure #1
-/* NODE will store available restuarants and prices over there for an item */
+/* NODE will store available restaurants and prices over there for an item */
 struct NODE 
 {
 	char word[50];
@@ -17,7 +17,7 @@ struct NODE
 } *head=NULL;
 
 //structure #2
-/* TNode is acutully tree node corresponding to NODE */
+/* TNode is actually tree node corresponding to NODE */
 struct TNode
 {
 	char word[50];
@@ -30,16 +30,16 @@ struct TNode
 };
 
 //structure #3
-/* restuarants stores availble restuarant ID's for the required items */
-struct restuarants
+/* restaurants stores available restaurant ID's for the required items */
+struct restaurants
 { 
 	int no_rest;
 	int rest_id[10];
 };
 
 ////structure #4
-/* availableRestuarant stores a available restuarant ID and the prices of required items over there along with it's tag number */
-struct availableRestuarant
+/* availableRestaurant stores a available restaurant ID and the prices of required items over there along with it's tag number */
+struct availableRestaurant
 { 
 	int rest_id;
 	int tag_no[10];
@@ -49,7 +49,7 @@ struct availableRestuarant
 /* functions */
 
 //function #1
-/* Read dat from a csv file and write into a linked list,this function read unlimited rows and around 10 items from a row  */
+/* Read data from a csv file and write into a linked list,this function read unlimited rows and around 10 items from a row  */
 struct NODE* createLinkedList(char *a)
 {	
 	FILE *data;
@@ -286,10 +286,10 @@ struct TNode* doBinarySearch(struct TNode* root, char *item_name)
 }
 
 //function #10
-/*A function which retuns the list of available reatuarant ID's which will provide the required  items*/
-struct restuarants* availableRestuarants(struct TNode** items,int argc)
+/*A function which returns the list of available restaurant ID's which will provide the required  items*/
+struct restaurants* availableRestaurants(struct TNode** items,int argc)
 {       
-	struct restuarants* node = (struct restuarants*)malloc(sizeof(struct restuarants));
+	struct restaurants* node = (struct restaurants*)malloc(sizeof(struct restaurants));
 	node->no_rest=0;
 	int i=0,j=0,k=0;
 	int searchTherestIdInTheItem(struct TNode* node ,int rest_id)
@@ -321,8 +321,8 @@ struct restuarants* availableRestuarants(struct TNode** items,int argc)
 }
 
 //function #11
-/*This function helps to list each available restuarant with corresponding list of prices of required items*/
-void get_available_rest(struct TNode** items,struct restuarants* node,struct availableRestuarant* av_rest,int* restId,float* totalPrice,int i,int argc)
+/*This function helps to list each available restaurant with corresponding list of prices of required items*/
+void get_available_rest(struct TNode** items,struct restaurants* node,struct availableRestaurant* av_rest,int* restId,float* totalPrice,int i,int argc)
 {
 	int j,k;	
 	av_rest->rest_id=node->rest_id[i];
@@ -349,7 +349,7 @@ void get_available_rest(struct TNode** items,struct restuarants* node,struct ava
 	}			
 }
 
-//functions declared got end here
+//functions declared ends here
 
 /*Main function starts*/
 
@@ -383,26 +383,26 @@ int main(int argc, char**argv)
 		printf("Nil\n");
 		return;
 	  }
-	struct restuarants* rests = (struct restuarants*)malloc(sizeof(struct restuarants));
-	/*rests points to the structure of available restuarant Id's*/	
-	rests=availableRestuarants(item_required,argc);
+	struct restaurants* rests = (struct restaurants*)malloc(sizeof(struct restaurants));
+	/*rests points to the structure of available restaurant Id's*/	
+	rests=availableRestaurants(item_required,argc);
 	if(rests->no_rest==0)
 	{ 
 		printf("Nil\n");return(3);
 	}
-	struct availableRestuarant* rest=(struct availableRestuarant*)malloc((rests->no_rest)*sizeof(struct availableRestuarant));
-	/* array 'a' stores all the available restuarant Id's*/	
+	struct availableRestaurant* rest=(struct availableRestaurant*)malloc((rests->no_rest)*sizeof(struct availableRestaurant));
+	/* array 'a' stores all the available restaurant Id's*/	
 	int a[rests->no_rest];
 	/* array*/
 	float b[rests->no_rest];
-	/* array 'b' stores the total cost for required items in the available restuarants*/
+	/* array 'b' stores the total costs for required items in the available restaurants*/
 	for(i=0;i<rests->no_rest;i++)
 	{
 		get_available_rest(item_required,rests,rest,&a[i],&b[i],i,argc);
 		rest++;
 	}
 	rest-=rests->no_rest;
-	/* finding out the available restuarant which has the least total cost for the specified items*/	
+	/* finding out the available restaurant which has the least total cost for the specified items*/	
 	for(i=1;i<rests->no_rest;i++)
 	{
 		if(b[i-1]<b[i]) 
@@ -411,7 +411,7 @@ int main(int argc, char**argv)
 			a[i]=a[i-1];
 		}
 	}
-	/* printing out the restuarant Id and total price corresponding to the available restuarant which costs less  */
+	/* printing out the restaurant Id and total price corresponding to the available restaurant which costs less  */
 	printf("%d, %0.2f\n",a[i-1],b[i-1]);
 }
 
