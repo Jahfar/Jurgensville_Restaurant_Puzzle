@@ -376,7 +376,7 @@ int main(int argc, char**argv)
 {
 	if (argc<3)
 	{
-		printf("Nil1\n");
+		printf("Nil\n");
 		return(1); 
 	}	
 	
@@ -419,7 +419,7 @@ int main(int argc, char**argv)
 	 }
 	 if(flag==1) 
 	  {
-		printf("Nil2\n");
+		printf("Nil\n");
 		return;
 	  }
 	struct restaurants* rests = (struct restaurants*)malloc(sizeof(struct restaurants));
@@ -427,7 +427,7 @@ int main(int argc, char**argv)
 	rests=availableRestaurants(item_required,argc,total_restaurants);
 	if(rests->no_rest==0)
 	{ 
-		printf("Nil3\n");return(3);
+		printf("Nil\n");return(3);
 	}
 	struct availableRestaurant* rest=(struct availableRestaurant*)malloc((rests->no_rest)*sizeof(struct availableRestaurant));
 	/* array 'a' stores all the available restaurant Id's*/	
