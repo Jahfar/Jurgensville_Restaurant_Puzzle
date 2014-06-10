@@ -35,9 +35,10 @@ struct TNode
 //structure #3
 /* restaurants stores available restaurant ID's for the required items */
 struct restaurants
-{ 
-	int no_rest;
+{ 	int no_indep_rest;
 	int* rest_id;
+	int* no_tags;
+	
 };
 
 ////structure #4
@@ -46,64 +47,63 @@ struct availableRestaurant
 { 
 	int rest_id;
 	int* tag_no;
+	int* flag;
 	float* price;
+
 };
 
 /* functions */
 
 //function #1
 /* this function reads data from a csv file and write into a linked list, also find out the total number of rows and different resturants in the csv file  */
-void createLinkedList(char *a,struct NODE** head, int* total_tags,int* total_restaurants)
+void createLinkedList(char *a,struct NODE** head, int* total_tags)
 {	
 	FILE *data;
 	data = fopen(a, "r");
 	char parsedLine[500];
 	int i=0,n=0;
-	int b[60];
-	for(i=0;i<60;i++) b[i]=0;
-	*total_tags=0;	
-	*total_restaurants=0;
-	
+	*total_tags=1;		
 	while (fgets(parsedLine, 500, data) != NULL)
 	{
-	    	struct NODE *node = malloc(sizeof(struct NODE));
-	    	char *getRest_id = strtok(parsedLine, ", ");
-	    	node->initial_rest_id = atoi(getRest_id);
-		if(b[node->initial_rest_id]==0) 
-		{
-			b[node->initial_rest_id]=1;
-			(*total_restaurants)++;
-		}
-	    	char *getPrice = strtok(NULL, ", "); 
-	    	node->initial_price = atof(getPrice);
-	    	char *getWord = strtok(NULL, ", ");
-	    	strcpy(node->word, getWord);
-		n=strlen(node->word);
-		if(node->word[n-1] =='\n') { node->word[n-2]='\0';}
-	    	node->initial_tag_no=*total_tags;
-		node->no_rest=1;
-	    	node->next = *head;
-	    	*head = node; 
-	    	while( (getWord = strtok(NULL, ", ") ) != NULL)
-		{
-		    	struct NODE *node =(struct NODE * )malloc(sizeof(struct NODE));
-	    		strcpy(node->word, getWord);
+		if(parsedLine[0]!='\n')
+		{	    	
+			struct NODE *node = malloc(sizeof(struct NODE));
+		    	char *getRest_id = strtok(parsedLine, ", ");
+		    	node->initial_rest_id = atoi(getRest_id);
+		    	char *getPrice = strtok(NULL, ", "); 
+		    	node->initial_price = atof(getPrice);
+		    	char *getWord = strtok(NULL, ", ");
+		    	strcpy(node->word, getWord);
 			n=strlen(node->word);
 			if(node->word[n-1] =='\n') { node->word[n-2]='\0';}
-	   		node->initial_rest_id = atoi(getRest_id);
-	    		node->initial_price = atof(getPrice);
-	    		node->initial_tag_no=*total_tags;
+		    	node->initial_tag_no=(*total_tags);
 			node->no_rest=1;
-	    		node->next = *head;
-	    		*head = node; 
-		}
-		(*total_tags)++;
-   
+		    	node->next = *head;
+		    	*head = node; 
+
+		    	while( (getWord = strtok(NULL, ", ") ) != NULL)
+			{
+				if(getWord[0]!='\n')		    	
+				{	
+					struct NODE *node =(struct NODE * )malloc(sizeof(struct NODE));
+			    		strcpy(node->word, getWord);
+					n=strlen(node->word);
+					if(node->word[n-1] =='\n') { node->word[n-2]='\0';}
+			   		node->initial_rest_id = atoi(getRest_id);
+			    		node->initial_price = atof(getPrice);
+			    		node->initial_tag_no=*total_tags;
+					node->no_rest=1;
+			    		node->next = *head;
+			    		*head = node; 
+				}
+			}
+		}	
+	(*total_tags)++;
+	   
 	}
 	fclose(data);
 	
 }
-
 /* following functions are used for sorting the list using merge sort */
 /* sorts the linked list by changing next pointers (not data) */
 
@@ -303,37 +303,59 @@ struct TNode* doBinarySearch(struct TNode* root, char *item_name)
 
 //function #10
 /*A function which returns the list of available restaurant ID's which will provide the required  items*/
-struct restaurants* availableRestaurants(struct TNode** items,int argc,int total_restaurants)
-{       
+struct restaurants* availableRestaurants(struct TNode** items,int argc,int total_tags)
+{       	
 	struct restaurants* node = (struct restaurants*)malloc(sizeof(struct restaurants));
-	node->no_rest=0;
-	node->rest_id=(int* )malloc(total_restaurants*sizeof(int));
-	int i=0,j=0,k=0;
-	int searchTherestIdInTheItem(struct TNode* node ,int rest_id)
+	node->no_indep_rest=0;
+	node->rest_id=(int* )malloc(total_tags*sizeof(int));
+	int i=0,j=0,k=0,m=0;
+	int searchTherestIdInTheItem(struct TNode* node,int rest_id)
 	{	
 		int i=0,j=0;
 		for(i=0;i<node->no_rest;i++)
 		{
 			 if(node->rest_id[i]==rest_id) 
 			 {
-				j=1; return(j);  break;
+				j=1;
 			 }
 		}
-		if(i==node->no_rest) return(j);
+	        return(j);
 	}
 	for(j=0;j<items[0]->no_rest;j++)
 	{	
-		for(i=1;i<(argc-2);i++)
+		for(m=0;m<j;m++) if(items[0]->rest_id[m]==items[0]->rest_id[j]) break;
+		if(m==j)
 		{
-			k=searchTherestIdInTheItem(items[i],items[0]->rest_id[j]);
-			if(k==0) break;
-		}
-		if(i==argc-2) 
-		{
-			node->rest_id[node->no_rest]=items[0]->rest_id[j];			
-			node->no_rest+=1;
+			for(i=1;i<(argc-2);i++)
+			{
+				k=searchTherestIdInTheItem(items[i],items[0]->rest_id[j]);
+				if(k==0) break;
+			}
+			if(i==argc-2) 
+			{
+				node->rest_id[node->no_indep_rest]=items[0]->rest_id[j];			
+				node->no_indep_rest+=1;
+			}
 		}
 	}
+	int count_rest_id(struct TNode** items,int rest_id)
+	{
+		int j,k,count=0;
+		for(j=0;j<(argc-2);j++)
+		{
+			for(k=0;k<items[j]->no_rest;k++)
+			{
+				if(items[j]->rest_id[k]==rest_id)
+				{
+					count++;
+				}
+			 			
+			}
+	 	}
+		return(count);
+	}
+	node->no_tags=(int* )malloc((node->no_indep_rest)*sizeof(int));
+	for(i=0;i<(node->no_indep_rest);i++) (node->no_tags[i])=count_rest_id(items,node->rest_id[i]);
 	return(node);
 }
 
@@ -341,9 +363,10 @@ struct restaurants* availableRestaurants(struct TNode** items,int argc,int total
 /*This function helps to list each available restaurant with corresponding list of prices of required items*/
 void get_available_rest(struct TNode** items,struct restaurants* node,struct availableRestaurant* av_rest,int* restId,float* totalPrice,int i,int argc)
 {
-	int j,k;	
-	av_rest->tag_no = (int* )malloc((argc-2)*sizeof(int));
-	av_rest->price = (float* )malloc((argc-2)*sizeof(float));
+	int j,k,x=0;
+	av_rest->tag_no = (int* )malloc((node->no_tags[i])*sizeof(int));
+	av_rest->flag = (int* )malloc((node->no_tags[i])*sizeof(int));
+	av_rest->price = (float* )malloc((node->no_tags[i])*sizeof(float));
 	av_rest->rest_id=node->rest_id[i];
 	*restId=node->rest_id[i];
 	*totalPrice=0;		
@@ -353,19 +376,36 @@ void get_available_rest(struct TNode** items,struct restaurants* node,struct ava
 		{
 			if(items[j]->rest_id[k]==av_rest->rest_id)
 			{
-				av_rest->tag_no[j]=items[j]->tag_no[k];
-				av_rest->price[j]=items[j]->price[k];
-				break;
+				av_rest->tag_no[x]=items[j]->tag_no[k];
+				av_rest->price[x]=items[j]->price[k];
+				x++;
 			}
 		 			
 		}
-	 
 	}
-	for(j=0;j<(argc-2);j++)
+	for(j=0;j<(node->no_tags[i]);j++) av_rest->flag[j]=0;
+	for(j=0;j<(node->no_tags[i]);j++)
 	{
-		for(k=0;k<j;k++) if(av_rest->tag_no[j]==av_rest->tag_no[k]) break;
-		if(j==k) (*totalPrice)+=av_rest->price[j];
-	}			
+		//if(av_rest->flag[j]!=1)	
+		for(k=0;k<(node->no_tags[i]);k++)
+		if(av_rest->tag_no[j]==av_rest->tag_no[k])
+		{	
+			av_rest->flag[j]+=1;
+		}
+	}
+	for(j=0;j<x;j++) if(av_rest->flag[j]!=(argc-2))  (*totalPrice)+=av_rest->price[j];
+	if((*totalPrice)!=0)
+	{
+		for(j=0;j<x;j++) 
+		if(av_rest->flag[j]==(argc-2))
+		if((*totalPrice)>(av_rest->price[j])) (*totalPrice)= (av_rest->price[j]);
+	}
+	else
+	{
+		(*totalPrice)=av_rest->price[0];
+		for(j=1;j<x;j++) 
+		if((av_rest->price[j])<(*totalPrice)) (*totalPrice)= (av_rest->price[j]);
+	}				
 }	
 
 //functions declared ends here
@@ -385,17 +425,16 @@ int main(int argc, char**argv)
 	struct NODE* head=NULL;
 	/*items in a row of the csv file gets a tag number and total tags is aslo the number of rows in the file*/
 	int total_tags=0;
-	int total_restaurants=0;
 	/* linked list is being created here */
-	createLinkedList(argv[1],&head,&total_tags,&total_restaurants);
+	createLinkedList(argv[1],&head,&total_tags);
 	/*dummy helps to traverse the linked list and do necessory memory alocations for the members of each nodes in the linked list */
 	struct NODE* dummy = (struct NODE* )malloc(sizeof(struct NODE));
 	dummy=head;	
 	while(dummy!=NULL)
 	{
-		dummy->rest_id=(int* )malloc(total_restaurants*sizeof(int));
-		dummy->tag_no=(int* )malloc(total_restaurants*sizeof(int));
-		dummy->price=(float* )malloc(total_restaurants*sizeof(float));
+		dummy->rest_id=(int* )malloc(total_tags*sizeof(int));
+		dummy->tag_no=(int* )malloc(total_tags*sizeof(int));
+		dummy->price=(float* )malloc(total_tags*sizeof(float));
 		dummy->rest_id[0]=dummy->initial_rest_id;
 		dummy->tag_no[0]=dummy->initial_tag_no;
 		dummy->price[0]=dummy->initial_price;
@@ -424,25 +463,25 @@ int main(int argc, char**argv)
 	  }
 	struct restaurants* rests = (struct restaurants*)malloc(sizeof(struct restaurants));
 	/*rests points to the structure of available restaurant Id's*/	
-	rests=availableRestaurants(item_required,argc,total_restaurants);
-	if(rests->no_rest==0)
+	rests=availableRestaurants(item_required,argc,total_tags);
+	if(rests->no_indep_rest==0)
 	{ 
 		printf("Nil\n");return(3);
 	}
-	struct availableRestaurant* rest=(struct availableRestaurant*)malloc((rests->no_rest)*sizeof(struct availableRestaurant));
+	struct availableRestaurant* rest=(struct availableRestaurant*)malloc((rests->no_indep_rest)*sizeof(struct availableRestaurant));
 	/* array 'a' stores all the available restaurant Id's*/	
-	int a[rests->no_rest];
+	int a[rests->no_indep_rest];
 	/* array*/
-	float b[rests->no_rest];
+	float b[rests->no_indep_rest];
 	/* array 'b' stores the total costs for required items in the available restaurants*/
-	for(i=0;i<rests->no_rest;i++)
+	for(i=0;i<rests->no_indep_rest;i++)
 	{
 		get_available_rest(item_required,rests,rest,&a[i],&b[i],i,argc);
 		rest++;
 	}
-	rest-=rests->no_rest;
+	rest-=rests->no_indep_rest;
 	/* finding out the available restaurant which has the least total cost for the specified items*/	
-	for(i=1;i<rests->no_rest;i++)
+	for(i=1;i<rests->no_indep_rest;i++)
 	{
 		if(b[i-1]<b[i]) 
 		{
@@ -451,8 +490,7 @@ int main(int argc, char**argv)
 		}
 	}
 	/* printing out the restaurant Id and total price corresponding to the available restaurant which costs less  */
-	printf("%d, %0.2f\n",a[i-1],b[i-1]);
-	
+	printf("%d, %0.2f\n",a[i-1],b[i-1]);	
 }
 
  
