@@ -47,7 +47,7 @@ struct availableRestaurant
 { 
 	int rest_id;
 	int* tag_no;
-	int* flag;
+	int* no_of_a_specific_item;
 	float* price;
 
 };
@@ -363,50 +363,63 @@ struct restaurants* availableRestaurants(struct TNode** items,int argc,int total
 /*This function helps to list each available restaurant with corresponding list of prices of required items*/
 void get_available_rest(struct TNode** items,struct restaurants* node,struct availableRestaurant* av_rest,int* restId,float* totalPrice,int i,int argc)
 {
-	int j,k,x=0;
+	int j,k,x=0,a[argc-2],b[argc-2],total_combinations=1;
+	float min=1000;
 	av_rest->tag_no = (int* )malloc((node->no_tags[i])*sizeof(int));
-	av_rest->flag = (int* )malloc((node->no_tags[i])*sizeof(int));
 	av_rest->price = (float* )malloc((node->no_tags[i])*sizeof(float));
+	av_rest->no_of_a_specific_item = (int* )malloc((argc-2)*sizeof(int));
 	av_rest->rest_id=node->rest_id[i];
 	*restId=node->rest_id[i];
 	*totalPrice=0;		
 	for(j=0;j<(argc-2);j++)
 	{
+		av_rest->no_of_a_specific_item[j]=0;
 		for(k=0;k<items[j]->no_rest;k++)
 		{
 			if(items[j]->rest_id[k]==av_rest->rest_id)
 			{
 				av_rest->tag_no[x]=items[j]->tag_no[k];
 				av_rest->price[x]=items[j]->price[k];
+				av_rest->no_of_a_specific_item[j]++;				
 				x++;
 			}
 		 			
 		}
-	}
-	for(j=0;j<(node->no_tags[i]);j++) av_rest->flag[j]=0;
-	for(j=0;j<(node->no_tags[i]);j++)
+	}	
+	a[0]=0;
+	b[0]=0;	
+	for(j=1;j<(argc-2);j++)
 	{
-		//if(av_rest->flag[j]!=1)	
-		for(k=0;k<(node->no_tags[i]);k++)
-		if(av_rest->tag_no[j]==av_rest->tag_no[k])
-		{	
-			av_rest->flag[j]+=1;
+		 b[j]=b[j-1]+av_rest->no_of_a_specific_item[j-1];
+		 a[j]=0;
+	}
+	int increment(int* a,int argc, int* counts)
+	{
+		for(j=argc-3;j>=0;j--)
+		{
+			if(++a[j] == counts[j]) a[j]=0;
+			else break;
 		}
+		if(j==-1) return(0);// finished 
+		else return(1);// continue
 	}
-	for(j=0;j<x;j++) if(av_rest->flag[j]!=(argc-2))  (*totalPrice)+=av_rest->price[j];
-	if((*totalPrice)!=0)
+	a:
+	for(j=0;j<(argc-2);j++)
 	{
-		for(j=0;j<x;j++) 
-		if(av_rest->flag[j]==(argc-2))
-		if((*totalPrice)>(av_rest->price[j])) (*totalPrice)= (av_rest->price[j]);
-	}
-	else
+		for(k=0;k<j;k++) 
+		if((av_rest->tag_no[(a[k]+b[k])]) == (av_rest->tag_no[(a[j]+b[j])])) break;
+		if(k==j) (*totalPrice)+=av_rest->price[(a[j]+b[j])];
+			
+	}	
+					
+	if((*totalPrice)<min) min=*totalPrice;	
+	if(increment(a,argc,av_rest->no_of_a_specific_item)==1)
 	{
-		(*totalPrice)=av_rest->price[0];
-		for(j=1;j<x;j++) 
-		if((av_rest->price[j])<(*totalPrice)) (*totalPrice)= (av_rest->price[j]);
-	}				
-}	
+		*totalPrice=0;
+		 goto a;
+	}	
+	*totalPrice=min;	
+	}	
 
 //functions declared ends here
 
@@ -420,7 +433,8 @@ int main(int argc, char**argv)
 		return(1); 
 	}	
 	
-	int i=0,flag=0,n=0;
+	int i=0,flag=0,n=0,rest_id=0,minRest_id=0;
+	float price=0,minPrice=1000;
 	/*head wants to point to the first node in the linked list*/	
 	struct NODE* head=NULL;
 	/*items in a row of the csv file gets a tag number and total tags is aslo the number of rows in the file*/
@@ -469,28 +483,15 @@ int main(int argc, char**argv)
 		printf("Nil\n");return(3);
 	}
 	struct availableRestaurant* rest=(struct availableRestaurant*)malloc((rests->no_indep_rest)*sizeof(struct availableRestaurant));
-	/* array 'a' stores all the available restaurant Id's*/	
-	int a[rests->no_indep_rest];
-	/* array*/
-	float b[rests->no_indep_rest];
-	/* array 'b' stores the total costs for required items in the available restaurants*/
 	for(i=0;i<rests->no_indep_rest;i++)
 	{
-		get_available_rest(item_required,rests,rest,&a[i],&b[i],i,argc);
+		get_available_rest(item_required,rests,rest,&rest_id,&price,i,argc);
 		rest++;
+		if(price<minPrice) minPrice=price; minRest_id=rest_id;
 	}
-	rest-=rests->no_indep_rest;
-	/* finding out the available restaurant which has the least total cost for the specified items*/	
-	for(i=1;i<rests->no_indep_rest;i++)
-	{
-		if(b[i-1]<b[i]) 
-		{
-			b[i]=b[i-1];
-			a[i]=a[i-1];
-		}
-	}
+	rest-=rests->no_indep_rest;	
 	/* printing out the restaurant Id and total price corresponding to the available restaurant which costs less  */
-	printf("%d, %0.2f\n",a[i-1],b[i-1]);	
+	printf("%d, %0.2f\n",minRest_id,minPrice);	
 }
 
  
