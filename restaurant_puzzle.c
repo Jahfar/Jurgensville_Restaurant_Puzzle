@@ -75,7 +75,7 @@ void createLinkedList(char *a,struct NODE** head, int* total_tags)
 		    	char *getWord = strtok(NULL, ", ");
 		    	strcpy(node->word, getWord);
 			n=strlen(node->word);
-			if(node->word[n-1] =='\n') { node->word[n-2]='\0';}
+			if(node->word[n-1] =='\n') { node->word[n-1]='\0';}
 		    	node->initial_tag_no=(*total_tags);
 			node->no_rest=1;
 		    	node->next = *head;
@@ -88,7 +88,7 @@ void createLinkedList(char *a,struct NODE** head, int* total_tags)
 					struct NODE *node =(struct NODE * )malloc(sizeof(struct NODE));
 			    		strcpy(node->word, getWord);
 					n=strlen(node->word);
-					if(node->word[n-1] =='\n') { node->word[n-2]='\0';}
+					if(node->word[n-1] =='\n') { node->word[n-1]='\0';}
 			   		node->initial_rest_id = atoi(getRest_id);
 			    		node->initial_price = atof(getPrice);
 			    		node->initial_tag_no=*total_tags;
